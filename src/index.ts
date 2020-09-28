@@ -1,1 +1,2 @@
-console.log(6)
+
+console.log('[index] > Iniciando o server')
