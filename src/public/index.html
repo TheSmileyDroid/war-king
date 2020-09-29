@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>War king</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="">
+    <style>
+      #div-list{
+        float: right;
+      }
+      #canvas{
+        stroke: black;
+        stroke-width: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Oi</h1>
+    <div id="div-list">
+      <h3>Lista de usuários ativos</h3>
+      <ul id="lista"></ul>
+    </div>
+    <canvas id="canvas" width="400" height="400"></canvas>
+    <script src="/socket.io/socket.io.js"></script>
+    <script type="module">
+      import { iniciarClient } from './client.js';
+      var socket = io()
+      console.log('oi')
+      iniciarClient(socket)
+    </script>
+  </body>
+</html>
