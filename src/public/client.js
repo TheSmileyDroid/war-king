@@ -7,10 +7,11 @@ export function iniciarClient (socket) {
 
   setEvents()
 
-  const objects = {
-    unidade: { x: 3, y: 2, color: 'rgb(000,000,200)' },
-    unidade2: { x: 6, y: 6, color: 'rgb(000,100,100)' }
-  }
+  const objects = [
+    { x: 3, y: 2, color: 'rgb(000,000,200)' },
+    { x: 6, y: 6, color: 'rgb(000,100,100)' }
+  ]
+  const posi = {}
   /**
    * @type {CanvasRenderingContext2D}
    */
@@ -81,11 +82,19 @@ export function iniciarClient (socket) {
     requestAnimationFrame(draw)
 
     function drawObjects () {
-      for (const id in objects) {
-        const objeto = objects[id]
+      objects.forEach((objeto, index) => {
         ctx.fillStyle = objeto.color
         ctx.fillRect(objeto.x * size, objeto.y * size, size, size)
-      }
+        if (posi[objeto.x] === undefined) {
+          posi[objeto.x] = {}
+          posi[objeto.x][objeto.y] = index
+        } else if (
+          posi[objeto.x][objeto.y] === undefined ||
+          posi[objeto.x][objeto.y] !== index
+        ) {
+          posi[objeto.x][objeto.y] = index
+        }
+      })
     }
 
     function drawBackground () {
