@@ -1,40 +1,83 @@
+/**
+   * @typedef {{
+      objects: {
+          x: any;
+          y: any;
+          color: any;
+          drawObject: (ctx: any, size: any) => void;
+      }[];
+  }} Game
+   */
+/**
+ *
+ * @param {SocketIOClient.Socket} socket
+ */
 export function iniciarClient (socket) {
   console.log('[iniciarClient] > Iniciando...')
   /**
    * @type {HTMLCanvasElement}
    */
   const canvas = document.getElementById('canvas')
-
-  setEvents()
-
-  const objects = [
-    { x: 3, y: 2, color: 'rgb(000,000,200)' },
-    { x: 6, y: 6, color: 'rgb(000,100,100)' }
-  ]
-  const posi = {}
   /**
    * @type {CanvasRenderingContext2D}
    */
   const ctx = canvas.getContext('2d')
+
+  /**
+   * @type {Game}
+   */
+  var jogo
+  const posi = {}
   var tamanho = 10
+  const size = canvas.width / tamanho
   const colorGrid = {}
 
-  setTableColor()
-  console.log(colorGrid)
-  const size = canvas.width / tamanho
-
-  requestAnimationFrame(draw)
+  setEvents()
 
   console.log('[iniciarClient] > Iniciado')
 
   function setEvents () {
     var lista = document.getElementById('lista')
     var userList = {}
+
+    socket.on('boot', (game) => {
+      jogo = game
+      setTableColor()
+      requestAnimationFrame(draw)
+      document.addEventListener('click', mouseClickInGrid)
+      /**
+       * @param {MouseEvent} event
+       */
+      function getMousePos (canvas, event) {
+        var rect = canvas.getBoundingClientRect()
+        return {
+          x: parseInt((event.clientX - rect.left) / size),
+          y: parseInt((event.clientY - rect.top) / size)
+        }
+      }
+      function mouseClickInGrid (event) {
+        var pos = getMousePos(canvas, event)
+        if (posi[pos.x] === undefined) {
+          posi[pos.x] = {}
+          socket.emit('spawn-unit', pos)
+        } else if (posi[pos.x][pos.y] === undefined) {
+          posi[pos.x][pos.y] = {}
+          socket.emit('spawn-unit', pos)
+        }
+        var _objeto = posi[pos.x][pos.y]
+        document.getElementById('put').innerHTML = `<h3>${_objeto}</h3>`
+      }
+    })
+
     socket.on('new-user', function (id) {
       addUserToList(id)
     })
     socket.on('remove-user', function (id) {
       removeUserFromList(id)
+    })
+    socket.on('change-game', (game) => {
+      console.log('changeGame')
+      jogo = game
     })
 
     function removeUserFromList (id) {
@@ -82,9 +125,8 @@ export function iniciarClient (socket) {
     requestAnimationFrame(draw)
 
     function drawObjects () {
-      objects.forEach((objeto, index) => {
-        ctx.fillStyle = objeto.color
-        ctx.fillRect(objeto.x * size, objeto.y * size, size, size)
+      jogo.objects.forEach((objeto, index) => {
+        drawObject(objeto, ctx, size)
         if (posi[objeto.x] === undefined) {
           posi[objeto.x] = {}
           posi[objeto.x][objeto.y] = index
@@ -106,4 +148,9 @@ export function iniciarClient (socket) {
       }
     }
   }
+}
+
+function drawObject (object, ctx, size) {
+  ctx.fillStyle = object.color
+  ctx.fillRect(object.x * size, object.y * size, size, size)
 }
